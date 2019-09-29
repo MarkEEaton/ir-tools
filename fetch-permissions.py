@@ -2,6 +2,8 @@ from __future__ import print_function
 import requests
 import pickle
 import os.path
+from pprint import pprint
+from bs4 import BeautifulSoup
 from settings import spreadsheet_id, romeo
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -51,12 +53,26 @@ def main():
     if not values:
         print("No data found.")
     else:
-        for idx, title in enumerate(values):
-            try:
-                api = requests.get("http://www.sherpa.ac.uk/romeo/api29.php?jtitle=" + title[0] + "&ak=" + romeo)
-                print(idx + 2, "found")
-            except IndexError:
-                print(idx + 2, "not found")
+        link_list = []
+        for title in values:
+            link_list.append(fetch(title))
+
+    print(len(link_list))
+
+def fetch(title):
+    try:
+        api = requests.get("http://www.sherpa.ac.uk/romeo/api29.php?jtitle=" + title[0] + "&ak=" + romeo)
+        soup = BeautifulSoup(api.text, features="lxml")
+        descriptions = soup.find_all("copyrightlinktext")
+        urls = soup.find_all("copyrightlinkurl")
+        desc_contents = [i.get_text() for i in descriptions]
+        urls_contents = [i.get_text() for i in urls]
+        zipped = zip(desc_contents, urls_contents)
+        return(list(zipped))
+
+    except (IndexError, AttributeError):
+        return []
+
 
 if __name__ == "__main__":
     main()
