@@ -1,7 +1,3 @@
 # ir-tools
 
-These two tools are intended to facilitate institutional repository work at Kingsborough. They are:
-1.  A script to take data from a gmail folder full of google alerts and turn them into a spreadsheet
-2.  A script to check rights of a google sheet full of targets, via Sherpa/RoMEO
-
-At the moment, `make-spreadsheet.py` works as intended, but `fetch-permissions.py` still needs some work. 
+This script is intended to take data from a gmail folder full of google alerts and turn them into a spreadsheet. It will attempt to fetch rights for each item from the Sherpa RoMEO API. It is still a work in progress, as it is being adapted for the new RoMEO API.
