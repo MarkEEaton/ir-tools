@@ -4,6 +4,8 @@ import os.path
 import base64
 import email
 import csv
+import requests
+import settings
 from datetime import datetime
 from titlecase import titlecase
 from googleapiclient.discovery import build
@@ -14,9 +16,7 @@ from bs4 import BeautifulSoup
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
 
-
 def main():
-    """ do the work of processing the emails """
     creds = None
     # The file token.pickle stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
@@ -99,9 +99,25 @@ def main():
             ]:
                 journal = journal[:-6]
 
+            rights = fetch_rights(title)
             # append the data
-            output_data.append((datetime.now(), author, title, journal, url))
+            output_data.append((datetime.now(), author, title, journal, url, rights))
     return output_data
+
+
+def fetch_rights(title):
+    resp = requests.get("https://v2.sherpa.ac.uk/cgi/retrieve/cgi/retrieve?item-type=publication&api-key=" + settings.romeo2 + "&format=Json&limit=5&filter=[[%22title%22,%22equals%22,%22" + title + "%22]]")
+    data = resp.json()
+    try:
+        policies = data["items"][0]["publisher_policy"]
+        policy_urls = []
+        for policy in policies:
+            for urls in policy['urls']:
+                url = urls['url']
+                policy_urls.append(url)
+        return policy_urls
+    except:
+        raise
 
 
 def make_csv(data):
