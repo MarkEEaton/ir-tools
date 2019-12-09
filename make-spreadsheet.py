@@ -17,6 +17,7 @@ from bs4 import BeautifulSoup
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
 
+
 def main():
     creds = None
     # The file token.pickle stores the user's access and refresh tokens, and is
@@ -30,9 +31,7 @@ def main():
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            flow = InstalledAppFlow.from_client_secrets_file(
-                "credentials.json", SCOPES
-            )
+            flow = InstalledAppFlow.from_client_secrets_file("credentials.json", SCOPES)
             creds = flow.run_local_server(port=0)
         # Save the credentials for the next run
         with open("token.pickle", "wb") as token:
@@ -109,18 +108,24 @@ def main():
 def fetch_rights(journal):
     if journal == "":
         return ""
-    resp = requests.get("https://v2.sherpa.ac.uk/cgi/retrieve/cgi/retrieve?item-type=publication&api-key=" + settings.romeo2 + "&format=Json&limit=5&filter=[[%22title%22,%22equals%22,%22" + journal + "%22]]")
+    resp = requests.get(
+        "https://v2.sherpa.ac.uk/cgi/retrieve/cgi/retrieve?item-type=publication&api-key="
+        + settings.romeo2
+        + "&format=Json&limit=5&filter=[[%22title%22,%22equals%22,%22"
+        + journal
+        + "%22]]"
+    )
     try:
         data = resp.json()
         policies = data["items"][0]["publisher_policy"]
-        policy_urls = "" 
+        policy_urls = ""
         for policy in policies:
-            for urls in policy['urls']:
-                url = urls['url']
+            for urls in policy["urls"]:
+                url = urls["url"]
                 policy_urls = url + "\n" + policy_urls
         return policy_urls
     except IndexError:
-        return "" 
+        return ""
     except:
         raise
 
