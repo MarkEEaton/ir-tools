@@ -7,6 +7,7 @@ import csv
 import requests
 import settings
 import json
+from pprint import pprint
 from datetime import datetime
 from titlecase import titlecase
 from googleapiclient.discovery import build
@@ -51,7 +52,10 @@ def main():
     # loop through the email messages
     for message in messages:
         data = service.users().messages().get(userId="me", id=message["id"]).execute()
-        data_b = base64.urlsafe_b64decode(data["payload"]["body"]["data"])
+        try:
+            data_b = base64.urlsafe_b64decode(data["payload"]["body"]["data"])
+        except:
+            data_b = base64.urlsafe_b64decode(data["payload"]["parts"][0]["body"]["data"])
         data_s = data_b.decode("utf-8")
 
         # beacause there may be multiple items per email, split it up into chunks
@@ -108,14 +112,15 @@ def main():
 def fetch_rights(journal):
     if journal == "":
         return ""
-    resp = requests.get(
-        "https://v2.sherpa.ac.uk/cgi/retrieve/cgi/retrieve?item-type=publication&api-key="
-        + settings.romeo2
-        + "&format=Json&limit=5&filter=[[%22title%22,%22equals%22,%22"
-        + journal
+    requests_url = "https://v2.sherpa.ac.uk/cgi/retrieve/cgi/retrieve?item-type=publication&api-key=" \
+        + settings.romeo2 \
+        + "&format=Json&limit=5&filter=[[%22title%22,%22equals%22,%22" \
+        + journal \
         + "%22]]"
-    )
+    print(requests_url)
+    resp = requests.get(requests_url)
     try:
+        print(resp.status_code)
         data = resp.json()
         policies = data["items"][0]["publisher_policy"]
         policy_urls = ""
@@ -124,10 +129,8 @@ def fetch_rights(journal):
                 url = urls["url"]
                 policy_urls = url + "\n" + policy_urls
         return policy_urls
-    except IndexError:
-        return ""
     except:
-        raise
+        return ""
 
 
 def make_csv(data):
