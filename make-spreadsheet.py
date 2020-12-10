@@ -135,7 +135,7 @@ def fetch_rights(journal):
 
 def make_csv(data):
     """ make a csv file with all the data """
-    with open("output.csv", "w", newline="", encdoing="utf-8") as f:
+    with open("output.csv", "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(
             [
